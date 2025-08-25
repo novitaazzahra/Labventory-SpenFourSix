@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laboratorium IPA • SpenFourSix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root{
+      --babyblue:#B3E5FC;
+      --softpink:#F8C8DC;
+      --softpurple:#D8B4FE;
+      --white:#ffffff;
+      --ink:#263238;
+      --muted:#6b7280;
+      --pill:#eef2ff;
+      --card:rgba(255,255,255,.88);
+      --radius:20px;
+      --shadow:0 12px 30px rgba(40, 40, 70, .12);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
+      font-family:Poppins, Calibri, "Segoe UI", Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1000px 600px at -10% -10%, rgba(184, 226, 255, .55), transparent),
+        radial-gradient(900px 600px at 110% 10%, rgba(248, 200, 220, .55), transparent),
+        radial-gradient(1000px 700px at 50% 120%, rgba(216, 180, 254, .50), transparent),
+        #f4edff;
+    }
+    header{
+      position:sticky; top:0; z-index:50; backdrop-filter:blur(8px) saturate(120%);
+      background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.7));
+      box-shadow:0 1px 0 rgba(0,0,0,.06);
+    }
+    .wrap{max-width:1200px; margin:0 auto; padding:14px 18px}
+    .brand{display:flex; align-items:center; gap:14px}
+    .logo{width:54px; height:54px; border-radius:50%; overflow:hidden; box-shadow:0 8px 20px rgba(184, 226, 255, .8)}
+    .logo img{width:100%; height:100%; object-fit:cover; display:block}
+    h1{font-size:20px; margin:0 0 2px 0; letter-spacing:.2px}
+    .sub{color:var(--muted); font-size:12px}
+
+    /* NAV chips */
+    .navchips{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+    .chip{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; background:var(--pill); border:1px solid rgba(0,0,0,.05); cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.06); font-weight:600}
+    .chip[aria-current="page"]{outline:2px solid #9DD6FF}
+
+    main{max-width:1200px; margin:20px auto; padding:0 18px 40px}
+
+    /* HERO */
+    .hero{display:grid; grid-template-columns:1fr; gap:16px; align-items:center}
+    @media(min-width:900px){ .hero{grid-template-columns:1.2fr .8fr} }
+    .hero .card{padding:24px}
+    .banner{width:100%; height:260px; border-radius:24px; background:url('sekolah.jpg') center/cover no-repeat; box-shadow:var(--shadow)}
+
+    /* Cards */
+    .card{background:var(--card); border:1px solid rgba(0,0,0,.06); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .card h2{margin:0 0 6px 0; font-size:22px}
+    .lead{color:#374151}
+
+    /* Home menu tiles */
+    .tiles{display:grid; gap:14px; grid-template-columns:1fr; margin-top:14px}
+    @media(min-width:700px){ .tiles{grid-template-columns:repeat(3, 1fr)} }
+    .tile{display:flex; flex-direction:column; gap:10px; padding:16px; border-radius:22px; border:1px solid rgba(0,0,0,.05); background:linear-gradient(180deg, #ffffff, #fef7ff); cursor:pointer; transition:.18s ease; box-shadow:var(--shadow)}
+    .tile:hover{transform:translateY(-3px)}
+    .tile.pink{background:linear-gradient(180deg, #fff1f7, #fde6f0)}
+    .tile.blue{background:linear-gradient(180deg, #eaf7ff, #d7efff)}
+    .tile .icon{width:46px; height:46px; border-radius:14px; display:grid; place-items:center; background:var(--pill);}
+    .tile .icon svg{width:26px; height:26px}
+    .tile small{color:var(--muted); font-weight:600}
+
+    /* Sections */
+    section{display:none}
+    section.active{display:block}
+
+    /* Forms & inputs */
+    .row{display:grid; grid-template-columns:1fr; gap:12px}
+    @media(min-width:700px){ .row{grid-template-columns:repeat(2,1fr)} }
+    label{font-size:12px; color:#6b7280}
+    input, select, textarea{width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(0,0,0,.12); background:white; font-family:inherit}
+    textarea{resize:vertical}
+    .btn{padding:10px 14px; border-radius:14px; border:1px solid rgba(0,0,0,.1); background:linear-gradient(180deg, #ffffff, #f7f7ff); font-weight:700; cursor:pointer}
+    .btn.primary{background:linear-gradient(180deg, #e6f5ff, #cfeeff); border-color:#9DD6FF}
+    .btn.pink{background:linear-gradient(180deg, #fde7f1, #f8c8dc); border-color:#f8c8dc}
+    .btn.purple{background:linear-gradient(180deg, #efe7ff, #e0d2ff); border-color:#d8b4fe}
+
+    /* Tables */
+    .table{width:100%; border-collapse:collapse; overflow:auto; border-radius:18px; background:white}
+    .table thead th{ text-align:left; padding:10px; border-bottom:1px solid rgba(0,0,0,.06)}
+    .thead-pink th{ background:#ffe6f1;}
+    .thead-blue th{ background:#e9f5ff;}
+    .table td{padding:10px; border-bottom:1px dashed rgba(0,0,0,.06)}
+    .toolbar{display:flex; flex-wrap:wrap; gap:8px; margin:8px 0}
+    .pillstat{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:#f4f6ff; border:1px solid rgba(0,0,0,.06)}
+
+    .kpi{display:grid; gap:10px; grid-template-columns:repeat(2,1fr)}
+    @media(min-width:900px){ .kpi{grid-template-columns:repeat(6,1fr)} }
+    .kpi .box{background:linear-gradient(180deg, #ffffff, #f6f7ff); border:1px solid rgba(0,0,0,.06); border-radius:18px; padding:14px; text-align:center}
+    .kpi .box h3{margin:0; font-size:13px; color:#6b7280}
+    .kpi .box p{margin:6px 0 0; font-size:22px; font-weight:800}
+
+    footer{padding:20px; text-align:center; color:#6b7280}
+    .hidden{display:none !important}
+
+    /* Modal */
+    .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.25); display:none; align-items:center; justify-content:center; z-index:100}
+    .modal{background:white; border-radius:18px; padding:18px; max-width:420px; width:92%; box-shadow:var(--shadow)}
+    .modal h3{margin-top:0}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo" title="Logo Laboratorium IPA">
+          <!-- letakkan file logo.png di folder yang sama; aspect 1:1 -->
+          <img src="logo.png" alt="Logo Laboratorium IPA">
+        </div>
+        <div>
+          <h1>LABVENTORY • SPENFOURSIX</h1>
+          <div class="sub">Smart Lab Management for Young Scientists.</div>
+        </div>
+      </div>
+
+      <div class="navchips" role="tablist" aria-label="Navigasi">
+        <button class="chip" data-tab="home" aria-current="page">🏠 Beranda</button>
+        <button class="chip" data-tab="pinjam">🧪 Peminjaman</button>
+        <button class="chip" data-tab="kembali">🔁 Pengembalian</button>
+        <button class="chip" data-tab="elkpd">📄 E-LKPD</button>
+        <button class="chip" data-tab="inventaris">📚 Inventaris 🔒</button>
+        <button class="chip" data-tab="jurnal">📝 Jurnal 🔒</button>
+        <button class="chip" data-tab="teamwork">👥 Teamwork</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HOME -->
+    <section id="view-home" class="active">
+      <div class="hero">
+        <div class="card">
+          <h2>Selamat Datang, Saintis Muda 👋</h2>
+          <p class="lead">Portal Laboratorium IPA SMPN 46 Surabaya yang memudahkan pengelolaan inventaris, peminjaman alat, jurnal kegiatan, dan E-LKPD secara modern dan realtime.</p>
+          <div class="tiles">
+            <div class="tile pink" onclick="showTab('pinjam')">
+              <div class="icon" aria-hidden="true">
+                <!-- flask -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><path d="M9 2h6"/><path d="M10 2v3l-5.5 9.5A4 4 0 0 0 8 20h8a4 4 0 0 0 3.5-5.5L14 5V2"/><path d="M6 16h12"/></svg>
+              </div>
+              <div><strong>Form Peminjaman</strong><br><small>peminjaman alat</small></div>
+            </div>
+
+            <div class="tile pink" onclick="showTab('kembali')">
+              <div class="icon" aria-hidden="true">
+                <!-- return -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><path d="M3 7l5-5v3h7a6 6 0 0 1 6 6v8"/><path d="M3 7h3"/><path d="M9 22l-5-5h3v-3"/></svg>
+              </div>
+              <div><strong>Form Pengembalian</strong><br><small>pengembalian alat</small></div>
+            </div>
+
+            <div class="tile blue" onclick="guardAndOpen('inventaris')">
+              <div class="icon" aria-hidden="true">
+                <!-- shelf -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="10" rx="1"/><path d="M8 10v10M16 10v10"/></svg>
+              </div>
+              <div><strong>Data Inventaris</strong><br><small>alat & bahan</small></div>
+            </div>
+
+            <div class="tile blue" onclick="guardAndOpen('jurnal')">
+              <div class="icon" aria-hidden="true">
+                <!-- journal -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
+              </div>
+              <div><strong>Jurnal & Ringkasan</strong><br><small>riwayat & kegiatan</small></div>
+            </div>
+
+            <div class="tile pink" onclick="showTab('elkpd')">
+              <div class="icon" aria-hidden="true">
+                <!-- file -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>
+              </div>
+              <div><strong>E-LKPD</strong><br><small>panduan praktikum</small></div>
+            </div>
+
+            <div class="tile pink" onclick="showTab('teamwork')">
+              <div class="icon" aria-hidden="true">
+                <!-- users -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div><strong>Teamwork</strong><br><small>about us</small></div>
+            </div>
+          </div>
+        </div>
+        <div class="banner" title="Foto Sekolah/Lab"></div>
+      </div>
+    </section>
+
+    <!-- PEMINJAMAN -->
+    <section id="view-pinjam" class="card">
+      <div style="padding:18px">
+        <h2>Form Peminjaman</h2>
+        <form id="formPinjam" class="row" autocomplete="off">
+          <div>
+            <label>Nama Peminjam</label>
+            <input id="pinjam-nama" required placeholder="Nama siswa" />
+          </div>
+          <div>
+            <label>Kelas (mis. 7A, 8A, 9A)</label>
+            <input id="pinjam-kelas" placeholder="7A" />
+          </div>
+          <div>
+            <label>Guru Pendamping</label>
+            <input id="pinjam-guru" placeholder="Nama guru" />
+          </div>
+          <div>
+            <label>Tanggal Peminjaman</label>
+            <input id="pinjam-tgl" type="date" required />
+          </div>
+          <div>
+            <label>Jam Peminjaman</label>
+            <input id="pinjam-jam" type="time" required />
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Kegiatan / Tujuan</label>
+            <input id="pinjam-kegiatan" placeholder="Praktikum larutan, pengamatan sel, dll" />
+          </div>
+
+          <div style="grid-column:1/-1">
+            <label>Alat yang Dipinjam (bisa lebih dari 1)</label>
+            <div id="pinjam-items"></div>
+            <div class="toolbar">
+              <button class="btn primary" type="button" onclick="addBorrowRow()">+ Tambah Alat</button>
+            </div>
+          </div>
+
+          <div style="grid-column:1/-1; display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn primary" type="submit">Submit Peminjaman</button>
+            <button class="btn" type="reset">Reset</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- PENGEMBALIAN -->
+    <section id="view-kembali" class="card">
+      <div style="padding:18px">
+        <h2>Form Pengembalian</h2>
+        <form id="formKembali" class="row" autocomplete="off">
+          <div>
+            <label>Pilih Transaksi Dipinjam</label>
+            <select id="kembali-tx" required></select>
+          </div>
+          <div>
+            <label>Tanggal Pengembalian</label>
+            <input id="kembali-tgl" type="date" required />
+          </div>
+          <div>
+            <label>Jam Pengembalian</label>
+            <input id="kembali-jam" type="time" required />
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Detail Alat Dikembalikan</label>
+            <div id="kembali-items"></div>
+          </div>
+          <div style="grid-column:1/-1; display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn pink" type="submit">Submit Pengembalian</button>
+            <button class="btn" type="reset">Reset</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- E-LKPD -->
+    <section id="view-elkpd" class="card">
+      <div style="padding:18px">
+        <h2>E-LKPD</h2>
+        <p class="sub">Unduh LKPD per kelas. Guru dapat menambahkan LKPD (wajib password).</p>
+
+        <div class="row" style="grid-template-columns:repeat(3,1fr)">
+          <div>
+            <h3>Kelas 7</h3>
+            <ul id="lkpd7"></ul>
+          </div>
+          <div>
+            <h3>Kelas 8</h3>
+            <ul id="lkpd8"></ul>
+          </div>
+          <div>
+            <h3>Kelas 9</h3>
+            <ul id="lkpd9"></ul>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px; padding:14px">
+          <h3>Tambah LKPD (Guru)</h3>
+          <form id="formLKPD" class="row">
+            <div><label>Judul/Materi</label><input id="lkpd-title" placeholder="Contoh: Perubahan Wujud Benda" required></div>
+            <div><label>Kelas</label>
+              <select id="lkpd-class" required><option value="7">7</option><option value="8">8</option><option value="9">9</option></select>
+            </div>
+            <div style="grid-column:1/-1"><label>File PDF</label><input id="lkpd-file" type="file" accept="application/pdf" required></div>
+            <div><label>Password</label><input id="lkpd-pass" type="password" placeholder="   " required></div>
+            <div style="grid-column:1/-1"><button class="btn purple" type="submit">Unggah LKPD</button></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVENTARIS -->
+    <section id="view-inventaris" class="card">
+      <div style="padding:18px">
+        <h2>Data Alat & Bahan</h2>
+        <div class="toolbar">
+          <input id="inv-search" placeholder="Cari alat/bahan..." style="flex:1" />
+          <select id="inv-cat" title="Kategori">
+            <option value="">Semua Kategori</option>
+            <option>Fisika</option>
+            <option>Kimia</option>
+            <option>Biologi</option>
+          </select>
+          <select id="inv-cond" title="Kondisi">
+            <option value="">Semua Kondisi</option>
+            <option>Baik</option>
+            <option>Kurang Baik</option>
+            <option>Rusak</option>
+            <option>Hilang</option>
+          </select>
+        </div>
+        <div style="overflow:auto">
+          <table class="table" id="tbl-inv">
+            <thead class="thead-blue">
+              <tr>
+                <th>Nama</th>
+                <th>Kategori</th>
+                <th>Baik</th>
+                <th>Kurang Baik</th>
+                <th>Rusak</th>
+                <th>Hilang</th>
+                <th>Lokasi</th>
+                <th>Tersedia*</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="sub">*Tersedia = (Baik + Kurang Baik) - yang sedang dipinjam</p>
+
+        <h3 style="margin-top:16px">Tambah/Perbarui Alat</h3>
+        <form id="formItem" class="row">
+          <div><label>Nama</label><input id="item-nama" required /></div>
+          <div><label>Kategori</label>
+            <select id="item-cat" required><option>Fisika</option><option>Kimia</option><option>Biologi</option></select>
+          </div>
+          <div><label>Baik</label><input id="item-good" type="number" min="0" value="0"/></div>
+          <div><label>Kurang Baik</label><input id="item-fair" type="number" min="0" value="0"/></div>
+          <div><label>Rusak</label><input id="item-bad" type="number" min="0" value="0"/></div>
+          <div><label>Hilang</label><input id="item-lost" type="number" min="0" value="0"/></div>
+          <div style="grid-column:1/-1"><label>Lokasi</label><input id="item-loc" placeholder="Lemari A1 / B2"/></div>
+          <div style="grid-column:1/-1; display:flex; gap:10px">
+            <button class="btn primary" type="submit">Simpan</button>
+            <button class="btn" type="button" onclick="resetItemForm()">Reset</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- JURNAL -->
+    <section id="view-jurnal" class="card">
+      <div style="padding:18px">
+        <h2>Jurnal & Ringkasan</h2>
+
+        <div class="kpi" id="kpi">
+          <div class="box"><h3>Alat Baik</h3><p id="kpi-good">0</p></div>
+          <div class="box"><h3>Alat Kurang Baik</h3><p id="kpi-fair">0</p></div>
+          <div class="box"><h3>Alat Rusak</h3><p id="kpi-bad">0</p></div>
+          <div class="box"><h3>Alat Hilang</h3><p id="kpi-lost">0</p></div>
+          <div class="box"><h3>Masih Dipinjam</h3><p id="kpi-borrowed">0</p></div>
+          <div class="box"><h3>Total Peminjaman</h3><p id="kpi-tx">0</p></div>
+        </div>
+
+        <div class="toolbar">
+          <button class="btn" onclick="exportExcelAll()">Ekspor Excel (Semua Sheet)</button>
+          <button class="btn" onclick="exportJSON()">Backup JSON</button>
+          <button class="btn" onclick="importJSON()">Impor JSON</button>
+        </div>
+
+        <h3 style="margin-top:12px">Jurnal Peminjaman</h3>
+        <div style="overflow:auto">
+          <table class="table" id="tbl-tx">
+            <thead class="thead-pink">
+              <tr>
+                <th>ID</th>
+                <th>Nama</th>
+                <th>Kelas</th>
+                <th>Guru</th>
+                <th>Alat (qty)</th>
+                <th>Tgl Pinjam</th>
+                <th>Tgl Kembali</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="toolbar">
+          <button class="btn pink" onclick="exportBorrowExcel()">Ekspor Excel Bulanan (Peminjaman)</button>
+        </div>
+
+        <h3 style="margin-top:12px">Jurnal Kegiatan Laboratorium</h3>
+        <form id="formAct" class="row">
+          <div><label>Tanggal</label><input id="act-date" type="date" required></div>
+          <div><label>Jam</label><input id="act-time" type="time" required></div>
+          <div><label>Kelas</label><input id="act-class" placeholder="7L" required></div>
+          <div><label>Guru</label><input id="act-teacher" placeholder="Nama guru" required></div>
+          <div style="grid-column:1/-1"><label>Kegiatan</label><input id="act-activity" placeholder="Praktikum larutan" required></div>
+          <div style="grid-column:1/-1"><label>Topik</label><input id="act-topic" placeholder="Asam-basa" required></div>
+          <div style="grid-column:1/-1"><button class="btn primary" type="submit">Tambah Kegiatan</button></div>
+        </form>
+        <div style="overflow:auto; margin-top:10px">
+          <table class="table" id="tbl-act">
+            <thead class="thead-blue">
+              <tr>
+                <th>Tanggal</th><th>Jam</th><th>Kelas</th><th>Guru</th><th>Kegiatan</th><th>Topik</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="toolbar">
+          <button class="btn pink" onclick="exportActsExcel()">Ekspor Excel Bulanan (Kegiatan)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAMWORK -->
+    <section id="view-teamwork" class="card">
+      <div style="padding:18px">
+        <h2>Teamwork</h2>
+        <p class="lead">Tim dan penanggung jawab Laboratorium IPA.</p>
+
+        <h3>Kepala Sekolah</h3>
+        <ul id="kepalaSekolah"></ul>
+
+        <h3>Kepala Laboratorium</h3>
+        <ul id="kepalaLaboratorium"></ul>
+
+        <h3>Guru Pamong</h3>
+        <ul id="guruPamong"></ul>
+
+        <h3>Guru IPA</h3>
+        <ul id="guruIPA"></ul>
+
+        <h3>Tim Penyusun</h3>
+        <ul id="timPenyusun"></ul>
+
+        <div style="margin-top:20px; font-size:14px;">
+          Get to know more about PSM
+          <a href="https://instagram.com/psm8.smpn46sby" target="_blank" style="text-decoration:none; color:#E1306C; font-weight:600">📷 @psm8.smpn46sby</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    © <span id="year"></span> Laboratorium IPA • SpenFourSix — PSM 8.0
+  </footer>
+
+  <!-- Modal Password -->
+  <div id="modalPass" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3>Masukkan Password</h3>
+      <p class="sub">Menu ini hanya untuk guru. Silakan masukkan password.</p>
+      <input id="passInput" type="password" placeholder=" " />
+      <div class="toolbar" style="justify-content:flex-end">
+        <button class="btn" onclick="closePass()">Batal</button>
+        <button class="btn purple" onclick="confirmPass()">Masuk</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/*************** Utilities & State ***************/
+const KEY={ ITEMS:'s46_items_v3', TX:'s46_tx_v3', ACT:'s46_act_v2', ELKPD:'s46_elkpd_v1' };
+const sessionKey={ INV:'s46_gate_inv', JRN:'s46_gate_jrn' };
+
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const today=()=>new Date().toISOString().slice(0,10);
+const nowTime=()=>new Date().toTimeString().slice(0,5);
+const fmt=n=>new Intl.NumberFormat('id-ID').format(n);
+
+function load(k,f){ try{const r=localStorage.getItem(k); return r?JSON.parse(r):f;}catch(e){return f} }
+function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+
+/*************** Data ***************/
+let items=load(KEY.ITEMS, []);
+let tx=load(KEY.TX, []);
+let acts=load(KEY.ACT, []);
+let elkpd=load(KEY.ELKPD, []); // {id,title,kelas:7|8|9,dataUrl,dateAdded}
+
+(function seed(){
+  if(items.length===0){
+    items=[
+      {id:gid(), name:'Mikroskop', cat:'Biologi', good:15, fair:5, bad:0, lost:0, loc:'Lemari B2'},
+      {id:gid(), name:'Gelas Ukur 100 ml', cat:'Kimia', good:20, fair:2, bad:1, lost:0, loc:'Lemari A1'},
+      {id:gid(), name:'Dinamometer', cat:'Fisika', good:6, fair:1, bad:1, lost:0, loc:'Rak C1'}
+    ]; save(KEY.ITEMS, items);
+  }
+})();
+
+/*************** Routing ***************/
+const views={
+  home:$('#view-home'),
+  pinjam:$('#view-pinjam'),
+  kembali:$('#view-kembali'),
+  elkpd:$('#view-elkpd'),
+  teamwork:$('#view-teamwork'),
+  inventaris:$('#view-inventaris'),
+  jurnal:$('#view-jurnal')
+};
+function showTab(name){
+  // Guarded tabs via chips too
+  if(name==='inventaris') return guardAndOpen('inventaris');
+  if(name==='jurnal') return guardAndOpen('jurnal');
+
+  Object.values(views).forEach(v=>v.classList.remove('active'));
+  views[name].classList.add('active');
+  $$('.chip').forEach(c=>c.setAttribute('aria-current', c.dataset.tab===name? 'page':'false'));
+
+  if(name==='inventaris'){ renderItems(); }
+  if(name==='pinjam'){ hydrateBorrowForm(); }
+  if(name==='kembali'){ fillReturnOptions(); }
+  if(name==='jurnal'){ renderTx(); renderActs(); refreshKPI(); }
+  if(name==='elkpd'){ renderELKPD(); }
+  if(name==='teamwork'){ renderTeamwork(); }
+}
+$$('.chip').forEach(c=>c.addEventListener('click',()=>showTab(c.dataset.tab)));
+
+function guardAndOpen(which){
+  // if already unlocked in session, just open
+  if(which==='inventaris' && sessionStorage.getItem(sessionKey.INV)==='ok'){ openTab(which); return; }
+  if(which==='jurnal' && sessionStorage.getItem(sessionKey.JRN)==='ok'){ openTab(which); return; }
+  // open modal
+  pendingOpen = which;
+  openPass();
+}
+function openTab(which){
+  Object.values(views).forEach(v=>v.classList.remove('active'));
+  views[which].classList.add('active');
+  $$('.chip').forEach(c=>c.setAttribute('aria-current', c.dataset.tab===which? 'page':'false'));
+  if(which==='inventaris'){ renderItems(); }
+  if(which==='jurnal'){ renderTx(); renderActs(); refreshKPI(); }
+}
+
+/*************** Password Modal ***************/
+let pendingOpen=null;
+function openPass(){ $('#modalPass').style.display='flex'; $('#passInput').value=''; $('#passInput').focus(); }
+function closePass(){ $('#modalPass').style.display='none'; pendingOpen=null; }
+function confirmPass(){
+  const val=$('#passInput').value.trim();
+  if(val!=='LABIPA46'){ alert('Password salah'); return; }
+  if(pendingOpen==='inventaris') sessionStorage.setItem(sessionKey.INV,'ok');
+  if(pendingOpen==='jurnal') sessionStorage.setItem(sessionKey.JRN,'ok');
+  const toOpen = pendingOpen;
+  closePass();
+  if(toOpen) openTab(toOpen);
+}
+
+/*************** Helpers ***************/
+function gid(){ return (crypto && crypto.randomUUID)? crypto.randomUUID(): 'id-'+Math.random().toString(36).slice(2); }
+function dayName(dStr){ const d=new Date(dStr); return d.toLocaleDateString('id-ID',{weekday:'long'}) }
+function availableOf(item){
+  const borrowed = tx.filter(t=>t.status==='Dipinjam')
+    .flatMap(t=>t.items)
+    .filter(it=>it.itemId===item.id)
+    .reduce((a,b)=>a+b.qty,0);
+  return Math.max(0, (item.good+item.fair)-borrowed);
+}
+
+/*************** INVENTARIS ***************/
+const tbodyInv=$('#tbl-inv tbody');
+const invSearch=$('#inv-search'); const invCat=$('#inv-cat'); const invCond=$('#inv-cond');
+function renderItems(){
+  const q=(invSearch.value||'').toLowerCase();
+  const fc=invCat.value; const fcond=invCond.value;
+  const rows=items.filter(it=>{
+    const condMatch=!fcond || (fcond==='Baik'&&it.good>0)||(fcond==='Kurang Baik'&&it.fair>0)||(fcond==='Rusak'&&it.bad>0)||(fcond==='Hilang'&&it.lost>0);
+    return (!q || it.name.toLowerCase().includes(q)) && (!fc || it.cat===fc) && condMatch;
+  });
+  tbodyInv.innerHTML=rows.map(it=>`
+    <tr>
+      <td>${it.name}</td>
+      <td>${it.cat}</td>
+      <td>${fmt(it.good)}</td>
+      <td>${fmt(it.fair)}</td>
+      <td>${fmt(it.bad)}</td>
+      <td>${fmt(it.lost)}</td>
+      <td>${it.loc||'-'}</td>
+      <td>${fmt(availableOf(it))}</td>
+      <td>
+        <button class="btn" onclick="editItem('${it.id}')">Edit</button>
+        <button class="btn" onclick="removeItem('${it.id}')">Hapus</button>
+      </td>
+    </tr>`).join('');
+}
+if(invSearch) invSearch.addEventListener('input', renderItems); if(invCat) invCat.addEventListener('change', renderItems); if(invCond) invCond.addEventListener('change', renderItems);
+
+function resetItemForm(){ $('#formItem').reset(); }
+if($('#formItem')) $('#formItem').addEventListener('submit', e=>{
+  e.preventDefault();
+  const name=$('#item-nama').value.trim(); if(!name) return;
+  const cat=$('#item-cat').value; const good=+($('#item-good').value||0); const fair=+($('#item-fair').value||0); const bad=+($('#item-bad').value||0); const lost=+($('#item-lost').value||0); const loc=$('#item-loc').value.trim();
+  const exist=items.find(x=>x.name.toLowerCase()===name.toLowerCase() && x.cat===cat);
+  if(exist){ Object.assign(exist,{good,fair,bad,lost,loc}); }
+  else { items.push({id:gid(), name, cat, good, fair, bad, lost, loc}); }
+  save(KEY.ITEMS, items); resetItemForm(); renderItems(); hydrateBorrowForm(); alert('Data alat disimpan.');
+});
+function editItem(id){ const it=items.find(x=>x.id===id); if(!it) return; $('#item-nama').value=it.name; $('#item-cat').value=it.cat; $('#item-good').value=it.good; $('#item-fair').value=it.fair; $('#item-bad').value=it.bad; $('#item-lost').value=it.lost; $('#item-loc').value=it.loc||''; window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'}); }
+function removeItem(id){ if(!confirm('Hapus item?')) return; items=items.filter(x=>x.id!==id); save(KEY.ITEMS, items); renderItems(); hydrateBorrowForm(); }
+
+/*************** PEMINJAMAN ***************/
+const pinItemsDiv=$('#pinjam-items');
+function borrowRowTemplate(rowId){
+  const opts=items.map(i=>`<option value="${i.id}">${i.name} (tersedia: ${availableOf(i)})</option>`).join('');
+  return `<div class="row" data-row="${rowId}" style="border:1px dashed rgba(0,0,0,.1); padding:10px; border-radius:14px; margin:10px 0">
+    <div><label>Alat</label><select class="br-item">${opts}</select></div>
+    <div><label>Jumlah</label><input type="number" min="1" value="1" class="br-qty"></div>
+    <div><label>Kondisi saat pinjam</label>
+      <select class="br-cond"><option>Baik</option><option>Kurang Baik</option></select>
+    </div>
+    <div style="display:flex; align-items:end"><button class="btn" type="button" onclick="removeBorrowRow('${rowId}')">Hapus</button></div>
+  </div>`;
+}
+function addBorrowRow(){ const id=gid(); if(pinItemsDiv) pinItemsDiv.insertAdjacentHTML('beforeend', borrowRowTemplate(id)); }
+function removeBorrowRow(id){ const el=pinItemsDiv.querySelector(`[data-row="${id}"]`); if(el) el.remove(); }
+function hydrateBorrowForm(){ if(!pinItemsDiv) return; pinItemsDiv.innerHTML=''; addBorrowRow(); if($('#pinjam-tgl')) $('#pinjam-tgl').value=today(); if($('#pinjam-jam')) $('#pinjam-jam').value=nowTime(); }
+
+if($('#formPinjam')) $('#formPinjam').addEventListener('submit', e=>{
+  e.preventDefault();
+  const borrower=$('#pinjam-nama').value.trim(); const kelas=$('#pinjam-kelas').value.trim(); const guru=$('#pinjam-guru').value.trim(); const tgl=$('#pinjam-tgl').value; const jam=$('#pinjam-jam').value; const keg=$('#pinjam-kegiatan').value.trim();
+  const rows=$$('#pinjam-items [data-row]'); if(rows.length===0) return alert('Tambahkan minimal 1 alat.');
+  const itemsSel=rows.map(r=>({ itemId:r.querySelector('.br-item').value, itemName: items.find(i=>i.id===r.querySelector('.br-item').value)?.name || '', qty:+r.querySelector('.br-qty').value, cond:r.querySelector('.br-cond').value }));
+  // Validasi stok
+  for(const it of itemsSel){ const inv=items.find(x=>x.id===it.itemId); if(!inv) return alert('Item tidak valid.'); if(it.qty>availableOf(inv)) return alert(`Stok tidak cukup untuk ${inv.name}.`); }
+  // Commit tx
+  const rec={ id:gid(), borrower, kelas, guru, startDate:tgl, startTime:jam, activity:keg, items:itemsSel, status:'Dipinjam' };
+  tx.unshift(rec); save(KEY.TX, tx);
+  alert('Peminjaman disimpan.'); showTab('jurnal'); renderTx(); refreshKPI(); fillReturnOptions();
+});
+
+/*************** PENGEMBALIAN ***************/
+const selTx=$('#kembali-tx'); const kembaliItemsDiv=$('#kembali-items');
+function fillReturnOptions(){ const open=tx.filter(t=>t.status==='Dipinjam'); if(selTx) selTx.innerHTML=open.map(t=>`<option value="${t.id}">${t.borrower} • ${t.kelas||''} • ${t.startDate} ${t.startTime}</option>`).join(''); buildReturnItems(); if($('#kembali-tgl')) $('#kembali-tgl').value=today(); if($('#kembali-jam')) $('#kembali-jam').value=nowTime(); }
+if(selTx) selTx.addEventListener('change', buildReturnItems);
+function buildReturnItems(){ const t=tx.find(x=>x.id===selTx.value); if(!t){ if(kembaliItemsDiv) kembaliItemsDiv.innerHTML='<div class="sub">Tidak ada transaksi aktif.</div>'; return; } if(kembaliItemsDiv) kembaliItemsDiv.innerHTML=t.items.map((it,i)=>{ const opts=['Baik','Kurang Baik','Rusak','Hilang'].map(s=>`<option>${s}</option>`).join(''); return `<div class="row" style="border:1px dashed rgba(0,0,0,.1); padding:10px; border-radius:14px; margin:10px 0"><div><label>Alat</label><input value="${it.itemName}" disabled></div><div><label>Jumlah dikembalikan</label><input type="number" min="0" max="${it.qty}" value="${it.qty}" class="ret-qty" data-index="${i}"></div><div><label>Kondisi saat kembali</label><select class="ret-cond" data-index="${i}">${opts}</select></div></div>`; }).join(''); }
+
+if($('#formKembali')) $('#formKembali').addEventListener('submit', e=>{
+  e.preventDefault(); const t=tx.find(x=>x.id===selTx.value); if(!t) return;
+  const date=$('#kembali-tgl').value; const time=$('#kembali-jam').value;
+  const qtyInputs=$$('.ret-qty'); const condSelects=$$('.ret-cond');
+  // Update inventory per item returned
+  qtyInputs.forEach(inp=>{
+    const i=+inp.dataset.index; const qty=+inp.value; const cond=Array.from(condSelects).find(s=>+s.dataset.index===i).value;
+    const it=t.items[i]; const inv=items.find(x=>x.id===it.itemId); if(!inv) return;
+    if(cond==='Baik') inv.good += qty; else if(cond==='Kurang Baik') inv.fair += qty; else if(cond==='Rusak') inv.bad += qty; else if(cond==='Hilang') inv.lost += qty;
+  });
+  t.status='Dikembalikan'; t.endDate=date; t.endTime=time; save(KEY.TX, tx); save(KEY.ITEMS, items);
+  alert('Pengembalian dicatat.'); showTab('jurnal'); renderTx(); refreshKPI(); renderItems(); fillReturnOptions();
+});
+
+/*************** JURNAL + KPI ***************/
+const tbodyTx=$('#tbl-tx tbody');
+function renderTx(){
+  if(!tbodyTx) return;
+  tbodyTx.innerHTML=tx.map(t=>{
+    const alat=t.items.map(i=>`${i.itemName} (${i.qty})`).join(', ');
+    const status=t.status; const back=t.endDate? t.endDate: '-';
+    return `<tr>
+      <td class="pillstat">${t.id.slice(0,8)}</td>
+      <td>${t.borrower}</td>
+      <td>${t.kelas||'-'}</td>
+      <td>${t.guru||'-'}</td>
+      <td>${alat}</td>
+      <td>${t.startDate}</td>
+      <td>${back}</td>
+      <td>${status}</td>
+    </tr>`
+  }).join('');
+}
+
+function refreshKPI(){
+  const good=items.reduce((a,b)=>a+b.good,0);
+  const fair=items.reduce((a,b)=>a+b.fair,0);
+  const bad=items.reduce((a,b)=>a+b.bad,0);
+  const lost=items.reduce((a,b)=>a+b.lost,0);
+  const borrowed=tx.filter(t=>t.status==='Dipinjam').reduce((a,b)=>a+b.items.reduce((x,y)=>x+y.qty,0),0);
+  if($('#kpi-good')) $('#kpi-good').textContent=fmt(good);
+  if($('#kpi-fair')) $('#kpi-fair').textContent=fmt(fair);
+  if($('#kpi-bad')) $('#kpi-bad').textContent=fmt(bad);
+  if($('#kpi-lost')) $('#kpi-lost').textContent=fmt(lost);
+  if($('#kpi-borrowed')) $('#kpi-borrowed').textContent=fmt(borrowed);
+  if($('#kpi-tx')) $('#kpi-tx').textContent=fmt(tx.length);
+}
+
+/*************** Kegiatan ***************/
+const tbodyAct=$('#tbl-act tbody');
+if($('#formAct')) $('#formAct').addEventListener('submit', e=>{
+  e.preventDefault(); const rec={ id:gid(), date:$('#act-date').value, time:$('#act-time').value, kelas:$('#act-class').value.trim(), teacher:$('#act-teacher').value.trim(), activity:$('#act-activity').value.trim(), topic:$('#act-topic').value.trim() };
+  acts.unshift(rec); save(KEY.ACT, acts); e.target.reset(); renderActs(); alert('Kegiatan ditambahkan.');
+});
+function renderActs(){ if(!tbodyAct) return; tbodyAct.innerHTML=acts.map(a=>`<tr><td>${a.date} (${dayName(a.date)})</td><td>${a.time}</td><td>${a.kelas}</td><td>${a.teacher}</td><td>${a.activity}</td><td>${a.topic}</td></tr>`).join(''); }
+
+/*************** E-LKPD ***************/
+function renderELKPD(){
+  ['7','8','9'].forEach(k=>{
+    const ul=$('#lkpd'+k);
+    const rows=elkpd.filter(e=>e.kelas===k).sort((a,b)=>b.dateAdded.localeCompare(a.dateAdded));
+    if(ul) ul.innerHTML=rows.map(r=>`
+      <li>
+        <a href="${r.dataUrl}" download="${sanitizeFileName(r.title)}.pdf">${r.title}</a> 
+        <small style="color:#6b7280">(${r.dateAdded})</small>
+        <button class="btn" style="margin-left:6px" onclick="deleteLKPD('${r.id}')">Hapus</button>
+      </li>`
+    ).join('') || '<li class="sub">Belum ada berkas.</li>';
+  });
+}
+
+function sanitizeFileName(s){ return s.replace(/[^a-z0-9\-\_\(\) ]/gi,'_'); }
+
+if($('#formLKPD')) $('#formLKPD').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const title=$('#lkpd-title').value.trim();
+  const kelas=$('#lkpd-class').value;
+  const file=$('#lkpd-file').files[0];
+  const pass=$('#lkpd-pass').value.trim();
+  if(pass!=='LABIPA46'){ alert('Password salah'); return; }
+  if(!file || file.type!=='application/pdf'){ alert('Mohon unggah file PDF.'); return; }
+  const dataUrl = await fileToDataURL(file);
+  elkpd.push({id:gid(), title, kelas, dataUrl, dateAdded: today()});
+  save(KEY.ELKPD, elkpd);
+  e.target.reset();
+  renderELKPD();
+  alert('LKPD ditambahkan.');
+});
+
+function fileToDataURL(file){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=()=>res(fr.result);
+    fr.onerror=rej;
+    fr.readAsDataURL(file);
+  });
+}
+
+function deleteLKPD(id){
+  if(!confirm('Yakin ingin menghapus LKPD ini?')) return;
+  elkpd = elkpd.filter(e => e.id !== id);
+  save(KEY.ELKPD, elkpd);
+  renderELKPD();
+  alert('LKPD berhasil dihapus.');
+}
+
+/*************** TEAMWORK ***************/
+function renderTeamwork(){
+  const elKepalaSekolah = $('#kepalaSekolah');
+  const elKepalaLab = $('#kepalaLaboratorium');
+  const elGuruPamong = $('#guruPamong');
+  const elGuruIPA = $('#guruIPA');
+  const elTim = $('#timPenyusun');
+
+  if(elKepalaSekolah) elKepalaSekolah.innerHTML = kepalaSekolah.map(n=>`<li>${n}</li>`).join('');
+  if(elKepalaLab) elKepalaLab.innerHTML = kepalaLaboratorium.map(n=>`<li>${n}</li>`).join('');
+  if(elGuruPamong) elGuruPamong.innerHTML = guruPamong.map(n=>`<li>${n}</li>`).join('');
+  if(elGuruIPA) elGuruIPA.innerHTML = guruIPA.map(n=>`<li>${n}</li>`).join('');
+  if(elTim) elTim.innerHTML = timPenyusun.map(n=>`<li>${n}</li>`).join('');
+}
+
+// data statis default
+let kepalaSekolah = [
+  "Ani Musafa'ah"
+];
+let kepalaLaboratorium = [
+  "Dra. Dwi Wulandari"
+];
+let guruPamong = [
+  "Priambodo, S.S"
+];
+let guruIPA = [
+  'Dra. Dwi Wulandari',
+  'Dra. Bekti Diah Widjajanti, M.Pd',
+  'Dra. Mukammilah',
+  'Ach. Jubaidi, S.Si',
+  'Serly Meinar Paramita',
+  'Aditya Gama Nurcahyo'
+];
+let timPenyusun = [
+  'Arika Nadia Zalfa',
+  'Naurah Fakhrina',
+  'Novita Azzahra Ramadhina'
+];
+
+/*************** Export / Import ***************/
+function exportExcelAll(){
+  const wb=XLSX.utils.book_new();
+  // Inventaris
+  const inv=[['Nama','Kategori','Baik','Kurang Baik','Rusak','Hilang','Lokasi','Tersedia']].concat(items.map(i=>[i.name,i.cat,i.good,i.fair,i.bad,i.lost,i.loc||'', availableOf(i)]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(inv), 'Inventaris');
+  // Peminjaman (semua)
+  const txRows=[['ID','Nama','Kelas','Guru','Alat(qty)','Tgl Pinjam','Tgl Kembali','Status']].concat(tx.map(t=>[t.id,t.borrower,t.kelas||'',t.guru||'', t.items.map(i=>`${i.itemName}(${i.qty})`).join('; '), t.startDate, t.endDate||'', t.status]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(txRows), 'Jurnal Peminjaman');
+  // Kegiatan (semua)
+  const actRows=[['Tanggal','Jam','Kelas','Guru','Kegiatan','Topik']].concat(acts.map(a=>[a.date,a.time,a.kelas,a.teacher,a.activity,a.topic]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(actRows), 'Jurnal Kegiatan');
+  const now=new Date();
+  XLSX.writeFile(wb, `S46_Lab_All_${now.toISOString().slice(0,10)}.xlsx`);
+}
+
+function exportBorrowExcel(){
+  const now=new Date(); const mm=now.getMonth(); const yy=now.getFullYear();
+  const txMonth=tx.filter(t=>{const d=new Date(t.startDate); return d.getMonth()===mm && d.getFullYear()===yy});
+  const rows=[['ID','Nama','Kelas','Guru','Alat(qty)','Tgl Pinjam','Tgl Kembali','Status']].concat(txMonth.map(t=>[t.id,t.borrower,t.kelas||'',t.guru||'', t.items.map(i=>`${i.itemName}(${i.qty})`).join('; '), t.startDate, t.endDate||'', t.status]));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Jurnal Peminjaman');
+  XLSX.writeFile(wb, `S46_Peminjaman_${now.toISOString().slice(0,10)}.xlsx`);
+}
+function exportActsExcel(){
+  const now=new Date(); const mm=now.getMonth(); const yy=now.getFullYear();
+  const actMonth=acts.filter(a=>{const d=new Date(a.date); return d.getMonth()===mm && d.getFullYear()===yy});
+  const rows=[['Tanggal','Jam','Kelas','Guru','Kegiatan','Topik']].concat(actMonth.map(a=>[a.date,a.time,a.kelas,a.teacher,a.activity,a.topic]));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Jurnal Kegiatan');
+  XLSX.writeFile(wb, `S46_Kegiatan_${now.toISOString().slice(0,10)}.xlsx`);
+}
+function exportJSON(){ const payload=JSON.stringify({items,tx,acts,elkpd},null,2); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([payload],{type:'application/json'})); a.download='s46-lab-backup.json'; a.click(); }
+function importJSON(){ const inp=document.createElement('input'); inp.type='file'; inp.accept='.json,application/json'; inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); if(d.items) items=d.items; if(d.tx) tx=d.tx; if(d.acts) acts=d.acts; if(d.elkpd) elkpd=d.elkpd; save(KEY.ITEMS,items); save(KEY.TX,tx); save(KEY.ACT,acts); save(KEY.ELKPD, elkpd); renderItems(); renderTx(); renderActs(); renderELKPD(); refreshKPI(); alert('Impor berhasil.'); }catch(e){ alert('JSON tidak valid: '+e.message) } }; r.readAsText(f); }; inp.click(); }
+
+/*************** INIT ***************/
+(function init(){
+  document.getElementById('year').textContent=new Date().getFullYear();
+  renderItems(); renderTx(); renderActs(); renderELKPD(); refreshKPI();
+  // default set dates/times in forms
+  if($('#pinjam-tgl')) $('#pinjam-tgl').value=today(); if($('#pinjam-jam')) $('#pinjam-jam').value=nowTime();
+  if($('#kembali-tgl')) $('#kembali-tgl').value=today(); if($('#kembali-jam')) $('#kembali-jam').value=nowTime();
+  fillReturnOptions();
+  // render teamwork list so it's ready
+  renderTeamwork();
+  $$('.chip').forEach(c=>c.addEventListener('click',()=>showTab(c.dataset.tab)));
+})();
+</script>
+</body>
+</html>
